@@ -1,4 +1,5 @@
-import java.io.IOException;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -12,10 +13,13 @@ import java.util.Scanner;
  *          Generating Four Non-repetitive Operational Questions
  **/
 public class fourOperation {
+    static ScriptEngine jse = new ScriptEngineManager().getEngineByName("JavaScript");
     public static void main(String[] args){
         int digitNumber=0;
         int quesNumber=0;
-        int count,count2,count3,count4;
+        int MAX_VALUE=0;
+        int MIN_VALUE=0;
+        int count2,count3,count4,countQN;
         Boolean flag = true;
         Map symbolMap = new HashMap();
         symbolMap.put("1","+");
@@ -26,7 +30,8 @@ public class fourOperation {
         Scanner scanner = new Scanner(System.in);
         System.out.println("欢迎使用自动出题系统!");
         while (flag){
-            String qusetion="";
+            String qusetion;
+            countQN=0;
             while (flag){
                 System.out.println("请输入想要设置的题目数：");
                 quesNumber=scanner.nextInt();
@@ -43,10 +48,20 @@ public class fourOperation {
                 }
                 System.out.println("请输入有效数字!");
             }
+            while (flag){
+                System.out.println("请输入四则运算题的上限值：");
+                MAX_VALUE=scanner.nextInt();
+                System.out.println("请输入四则运算题的下限值：");
+                MIN_VALUE=scanner.nextInt();
+                if (MAX_VALUE!=MIN_VALUE && MAX_VALUE>MIN_VALUE){
+                    break;
+                }
+                System.out.println("最大值和最小值不合理!");
+            }
             int[] number = new int[digitNumber];
             int[] symbol = new int[digitNumber-1];
             System.out.println("产生的四则运算题如下：");
-            for(count=0;count<quesNumber;count++){
+            while(countQN!=quesNumber){
                 qusetion="";
                 for (count2=0;count2<digitNumber;count2++){
                     number[count2]= (int) (1+Math.random()*100);
@@ -54,16 +69,24 @@ public class fourOperation {
                 for (count3=0;count3<digitNumber-1;count3++){
                     symbol[count3]= (int) (1+Math.random()*4);
                 }
-                for(count4=0;count4<digitNumber-1;count4++){
-                    qusetion+=String.valueOf(number[count4])+symbolMap.get(String.valueOf(symbol[count4]));
-                    if (count4==digitNumber-2){
-                        qusetion+=String.valueOf(number[count4+1]);
+                for(count4=0;count4<digitNumber-1;count4++) {
+                    qusetion += String.valueOf(number[count4]) + symbolMap.get(String.valueOf(symbol[count4]));
+                    if (count4 == digitNumber - 2) {
+                        qusetion += String.valueOf(number[count4 + 1]);
                     }
                 }
-                Object qusIsExist = questionMap.get(qusetion);
-                if (qusIsExist==null){
-                    questionMap.put(qusetion,"0");
-                    System.out.println(count+1+". "+qusetion);
+                try {
+                    String  result = jse.eval(qusetion).toString();
+                    int resultInt = Integer.parseInt(result);
+                    if (resultInt<=MAX_VALUE && resultInt>=MIN_VALUE){
+                        Object qusIsExist = questionMap.get(qusetion);
+                        if (qusIsExist==null){
+                            questionMap.put(qusetion,"0");
+                            System.out.println(countQN+1+". "+qusetion);
+                            countQN++;
+                        }
+                    }
+                } catch (Exception e) {
 
                 }
             }
